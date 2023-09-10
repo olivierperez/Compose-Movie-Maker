@@ -2,7 +2,7 @@
 
 FFMPEG="./ffmpeg.exe"
 CAPTURES_DIR="../captures"
-FPS=60
+FPS=10
 
 [ -f $FFMPEG ] || { >&2 echo "You need to download ffmpeg here!" ; exit 1; }
 
