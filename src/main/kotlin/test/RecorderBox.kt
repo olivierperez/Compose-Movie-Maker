@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import java.awt.Dimension
@@ -29,7 +30,7 @@ fun RecorderBox(
     fps: Int,
     dimension: Dimension,
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
+    content: @Composable (currentValue: Long) -> Unit
 ) {
     val recorder = rememberRecorder(fps, dimension, modifier, content)
     val scope = rememberCoroutineScope()
@@ -45,10 +46,10 @@ fun RecorderBox(
         }
 
         var demoAnimatedPercent by remember { mutableStateOf(0f) }
-        var maxTimeComputed by remember { mutableStateOf(0L) }
+        var startsComputed by remember { mutableStateOf(listOf(0L)) }
 
-        val demoAnimatedValue by remember(demoAnimatedPercent, maxTimeComputed) {
-            mutableStateOf((demoAnimatedPercent * maxTimeComputed).toLong())
+        val demoAnimatedValue by remember(demoAnimatedPercent, startsComputed) {
+            mutableStateOf((demoAnimatedPercent * startsComputed.last()).toLong())
         }
 
         Box(
@@ -60,15 +61,19 @@ fun RecorderBox(
             CaptureBox(
                 animationValue = demoAnimatedValue,
                 modifier = Modifier,
-                onTimeComputed = { maxTimeComputed = it },
-                content = { content() }
+                onStartsComputed = { startsComputed = it },
+                content = {
+                    val previousStart = startsComputed.lastOrNull { it <= demoAnimatedValue } ?: 0L
+                    val localAnimatedValue = demoAnimatedValue - previousStart
+                    content(localAnimatedValue)
+                }
             )
         }
         Text("${demoAnimatedValue / 1000f} sec")
         Slider(
             value = demoAnimatedPercent,
             onValueChange = { demoAnimatedPercent = it },
-            steps = ((maxTimeComputed / 1000).toInt() - 1).coerceAtLeast(0)
+            steps = ((startsComputed.last() / 1000).toInt() - 1).coerceAtLeast(0)
         )
     }
 }
@@ -77,32 +82,40 @@ fun RecorderBox(
 fun CaptureBox(
     animationValue: Long,
     modifier: Modifier = Modifier,
-    onTimeComputed: (Long) -> Unit,
-    content: @Composable () -> Unit
+    onStartsComputed: (List<Long>) -> Unit,
+    content: @Composable (currentValue: Long) -> Unit
 ) {
+    var computedStarts by remember { mutableStateOf(listOf(0L)) }
     Layout(
-        content = content, modifier = modifier
+        modifier = modifier,
+        content = {
+            val previousStart = computedStarts.lastOrNull { it <= animationValue } ?: 0L
+            val localAnimationValue = animationValue - previousStart
+            content(localAnimationValue)
+        }
     ) { measurables, constraints ->
-        var currentStart = 0L
+        val (placeables, starts) = measurables.fold(
+            Pair(listOf<Placeable>(), listOf<Long>())
+        ) { (currentPlaceables, currentStarts), measurable ->
+            val sceneData = measurable.parentData as? SceneData
+                ?: error(".scene(...) Modifier need to be called on each scene")
 
-        val placeables = measurables.mapNotNull { measurable ->
-            val sceneData =
-                measurable.parentData as? SceneData ?: error(".scene(...) Modifier need to be called on each scene")
-
-            if (animationValue < currentStart) {
-                currentStart += sceneData.millis
-                return@mapNotNull null
+            val nextStart = (currentStarts.lastOrNull() ?: 0L) + sceneData.millis
+            if (animationValue < (currentStarts.lastOrNull() ?: 0L)) {
+                Pair(currentPlaceables, currentStarts + nextStart)
+            } else {
+                val placeable = measurable.measure(constraints)
+                Pair(currentPlaceables + placeable, currentStarts + nextStart)
             }
-
-            currentStart += sceneData.millis
-
-            measurable.measure(constraints)
         }
 
-        onTimeComputed(currentStart)
+        computedStarts = starts
+        onStartsComputed(starts)
 
         layout(constraints.maxWidth, constraints.maxHeight) {
-            placeables.last().place(0, 0)
+            if (animationValue < computedStarts.last()) {
+                placeables.last().place(0, 0)
+            }
         }
     }
 }

@@ -15,14 +15,14 @@ fun rememberRecorder(
     fps: Int,
     dimension: Dimension,
     modifier: Modifier,
-    content: @Composable () -> Unit
+    content: @Composable (currentValue: Long) -> Unit
 ): Recorder = remember { Recorder(fps, dimension, modifier, content) }
 
 class Recorder(
     private val fps: Int,
     dimension: Dimension,
     modifier: Modifier,
-    content: @Composable () -> Unit
+    content: @Composable (currentValue: Long) -> Unit
 ) {
     private var animationValue by mutableStateOf(0L)
 
@@ -46,15 +46,16 @@ class Recorder(
 
     private var totalTime: Long? = null
 
-    private fun onTimeComputed(total: Long) {
+    private fun onTimeComputed(starts: List<Long>) {
         if (this.totalTime == null) {
-            this.totalTime = total
+            this.totalTime = starts.last()
         }
     }
 
     suspend fun record() {
         composeWindow.isVisible = true
         composeWindow.toFront()
+        screenshoter.init()
 
         delay(500)
 

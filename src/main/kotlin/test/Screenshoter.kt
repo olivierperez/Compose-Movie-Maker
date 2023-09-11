@@ -14,6 +14,13 @@ class Screenshoter(
 
     private val robot = Robot()
 
+    fun init() {
+        File(capturePath).run {
+            deleteRecursively()
+            mkdirs()
+        }
+    }
+
     fun capture(imageNumber: Int) {
         val bounds = Rectangle(rootPane.size)
         bounds.location = rootPane.locationOnScreen

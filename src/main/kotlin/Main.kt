@@ -17,14 +17,14 @@ fun Test() {
         fps = 10,
         dimension = Dimension(500, 300),
         modifier = Modifier.fillMaxSize()
-    ) {
+    ) { currentValue ->
         Text(
             text = "Scene n°1",
             style = MaterialTheme.typography.h1,
             modifier = Modifier.scene(millis = 2_000L).fillMaxSize()
         )
         Text(
-            text = "Scene n°2",
+            text = "Scene n°2 - $currentValue",
             style = MaterialTheme.typography.h2,
             modifier = Modifier.scene(millis = 3_000L).fillMaxSize()
         )
