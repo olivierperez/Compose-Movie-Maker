@@ -6,8 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import test.RecorderBox
-import test.scene
+import recorder.RecorderBox
+import recorder.scene
 import java.awt.Dimension
 
 @Preview

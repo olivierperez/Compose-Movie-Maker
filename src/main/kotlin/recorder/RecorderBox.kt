@@ -1,4 +1,4 @@
-package test
+package recorder
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
