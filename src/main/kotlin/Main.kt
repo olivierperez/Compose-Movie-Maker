@@ -21,12 +21,12 @@ fun Test() {
         Text(
             text = "Scene n°1",
             style = MaterialTheme.typography.h1,
-            modifier = Modifier.scene(millis = 2_000L)
+            modifier = Modifier.scene(millis = 2_000L).fillMaxSize()
         )
         Text(
             text = "Scene n°2",
             style = MaterialTheme.typography.h2,
-            modifier = Modifier.scene(millis = 3_000L)
+            modifier = Modifier.scene(millis = 3_000L).fillMaxSize()
         )
     }
 }
