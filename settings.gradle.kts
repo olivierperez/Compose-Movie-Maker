@@ -10,4 +10,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = "test-screenshot"
+rootProject.name = "ComposeMovieMaker"
