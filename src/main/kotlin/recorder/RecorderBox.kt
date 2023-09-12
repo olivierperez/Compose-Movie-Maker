@@ -30,7 +30,7 @@ fun RecorderBox(
     fps: Int,
     dimension: Dimension,
     modifier: Modifier = Modifier,
-    content: @Composable (currentValue: Long) -> Unit
+    content: @Composable RecorderScope.() -> Unit
 ) {
     val recorder = rememberRecorder(fps, dimension, modifier, content)
     val scope = rememberCoroutineScope()
@@ -63,9 +63,9 @@ fun RecorderBox(
                 modifier = Modifier,
                 onStartsComputed = { startsComputed = it },
                 content = {
-                    val previousStart = startsComputed.lastOrNull { it <= demoAnimatedValue } ?: 0L
-                    val localAnimatedValue = demoAnimatedValue - previousStart
-                    content(localAnimatedValue)
+                    with(RecorderScope(buildAnimatedValue(startsComputed, demoAnimatedValue))) {
+                        content()
+                    }
                 }
             )
         }
@@ -83,15 +83,15 @@ fun CaptureBox(
     animationValue: Long,
     modifier: Modifier = Modifier,
     onStartsComputed: (List<Long>) -> Unit,
-    content: @Composable (currentValue: Long) -> Unit
+    content: @Composable RecorderScope.() -> Unit
 ) {
     var computedStarts by remember { mutableStateOf(listOf(0L)) }
     Layout(
         modifier = modifier,
         content = {
-            val previousStart = computedStarts.lastOrNull { it <= animationValue } ?: 0L
-            val localAnimationValue = animationValue - previousStart
-            content(localAnimationValue)
+            with(RecorderScope(buildAnimatedValue(computedStarts, animationValue))) {
+                content()
+            }
         }
     ) { measurables, constraints ->
         val (placeables, starts) = measurables.fold(
@@ -117,5 +117,38 @@ fun CaptureBox(
                 placeables.last().place(0, 0)
             }
         }
+    }
+}
+
+private fun buildAnimatedValue(
+    starts: List<Long>,
+    animatedValue: Long
+): AnimatedValue {
+    val (previousStarts, nextStarts) = starts.findPreviousAndNextOf(animatedValue)
+    val absoluteProgress = starts.computeProgressionOf(animatedValue)
+    val localAnimationValue = animatedValue - previousStarts
+    val localProgress = localAnimationValue.toFloat() / (nextStarts - previousStarts)
+
+    return AnimatedValue(
+        absoluteValue = animatedValue,
+        absoluteProgress = absoluteProgress,
+        localValue = localAnimationValue,
+        localProgress = localProgress
+    )
+}
+
+private fun List<Long>.findPreviousAndNextOf(animationValue: Long): Pair<Long, Long> {
+    return this
+        .windowed(2) { Pair(it[0], it[1]) }
+        .lastOrNull { (first, _) -> first <= animationValue }
+        ?: Pair(0L, 0L)
+}
+
+private fun List<Long>.computeProgressionOf(animationValue: Long): Float {
+    val lastValue = this.lastOrNull() ?: 0L
+    return if (lastValue == 0L) {
+        -1f
+    } else {
+        animationValue.toFloat() / lastValue
     }
 }

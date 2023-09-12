@@ -15,14 +15,14 @@ fun rememberRecorder(
     fps: Int,
     dimension: Dimension,
     modifier: Modifier,
-    content: @Composable (currentValue: Long) -> Unit
+    content: @Composable RecorderScope.() -> Unit
 ): Recorder = remember { Recorder(fps, dimension, modifier, content) }
 
 class Recorder(
     private val fps: Int,
     dimension: Dimension,
     modifier: Modifier,
-    content: @Composable (currentValue: Long) -> Unit
+    content: @Composable RecorderScope.() -> Unit
 ) {
     private var animationValue by mutableStateOf(0L)
 
