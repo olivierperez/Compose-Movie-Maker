@@ -24,7 +24,7 @@ import java.awt.Dimension
 
 @Preview
 @Composable
-fun Test() {
+fun MainScene() {
     RecorderBox(
         fps = 30,
         dimension = Dimension(1200, 675),
@@ -83,6 +83,6 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         state = rememberWindowState(width = 1400.dp, height = 800.dp)
     ) {
-        Test()
+        MainScene()
     }
 }

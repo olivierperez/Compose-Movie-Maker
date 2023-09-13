@@ -47,7 +47,7 @@ fun RecorderScope.AvatarTitleSubTitle(
 
 @Preview
 @Composable
-fun TitledImagePreview() {
+private fun TitledImagePreview() {
     with(RecorderScope(AnimatedValue(25, 25, .25f, .25f, 1, 1))) {
         AvatarTitleSubTitle(
             image = { Box(Modifier.background(Color.Gray)) },
