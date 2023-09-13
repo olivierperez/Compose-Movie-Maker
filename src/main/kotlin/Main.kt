@@ -2,6 +2,7 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -10,26 +11,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 import recorder.RecorderBox
 import recorder.scene
-import scenes.TitledImage
+import scenes.AvatarTitleSubTitle
+import scenes.BigTitle
 import java.awt.Dimension
 
 @Preview
 @Composable
 fun Test() {
     RecorderBox(
-        fps = 10,
-        dimension = Dimension(500, 300),
+        fps = 30,
+        dimension = Dimension(1200, 675),
         modifier = Modifier.fillMaxSize()
     ) {
-        Text(
-            text = "Scene n°1",
-            style = MaterialTheme.typography.h1,
-            modifier = Modifier.scene(millis = 1_000L).fillMaxSize()
+        BigTitle(
+            modifier = Modifier.scene(2_000L),
+            title = { modifier ->
+                Text(
+                    modifier = modifier.padding(16.dp),
+                    text = "Inspired\nby Remotion",
+                    style = MaterialTheme.typography.h1,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         )
         Column(modifier = Modifier.scene(millis = 2_000L).fillMaxSize()) {
             Text(
@@ -37,13 +47,13 @@ fun Test() {
                 style = MaterialTheme.typography.h3,
             )
             Text(
-                text = "Absolute - ${animatedValue.absoluteValue} - ${animatedValue.absoluteProgress}"
+                text = "Absolute - ${animatedValue.absoluteValue} - ${animatedValue.absoluteProgress} - ${animatedValue.absoluteDuration}"
             )
             Text(
-                text = "Local - ${animatedValue.localValue} - ${animatedValue.localProgress}"
+                text = "Local - ${animatedValue.localValue} - ${animatedValue.localProgress} - ${animatedValue.localDuration}"
             )
         }
-        TitledImage(
+        AvatarTitleSubTitle(
             modifier = Modifier.scene(2_000L),
             image = { modifier ->
                 Image(
@@ -60,7 +70,7 @@ fun Test() {
                 Text(
                     "Compose Movie Maker : le 7ème art à portée de composants web et d'API \uD83C\uDFAC ",
                     modifier = modifier,
-                    style = MaterialTheme.typography.h6.copy(fontSize = 18.sp)
+                    style = MaterialTheme.typography.h5
                 )
             }
         )
@@ -71,6 +81,7 @@ fun main() = application {
     Window(
         title = "Recorder",
         onCloseRequest = ::exitApplication,
+        state = rememberWindowState(width = 1400.dp, height = 800.dp)
     ) {
         Test()
     }

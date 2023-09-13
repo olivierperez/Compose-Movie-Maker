@@ -29,14 +29,25 @@ class RecorderScope(
             })
             .then(graphicsLayer { alpha = fadeEasing.transform(progress) })
     }
+
+    fun Modifier.scaleIn(
+        millis: Long
+    ): Modifier {
+        return this
+            .then(graphicsLayer {
+                val progress = (animatedValue.localValue.toFloat() / millis).coerceIn(0f, 1f)
+                scaleX = 1f + .05f * progress
+                scaleY = 1f + .05f * progress
+            })
+    }
 }
 
 enum class Direction(
     val verticalMultiplier: Int,
     val horizontalMultiplier: Int
 ) {
-    TOWARD_DOWN(-1,0),
-    TOWARD_UP(1,0),
-    TOWARD_RIGHT(0,-1),
-    TOWARD_LEFT(0,1),
+    TOWARD_DOWN(-1, 0),
+    TOWARD_UP(1, 0),
+    TOWARD_RIGHT(0, -1),
+    TOWARD_LEFT(0, 1),
 }

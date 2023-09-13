@@ -46,9 +46,9 @@ class Recorder(
 
     private var totalTime: Long? = null
 
-    private fun onTimeComputed(starts: List<Long>) {
+    private fun onTimeComputed(ends: List<Long>) {
         if (this.totalTime == null) {
-            this.totalTime = starts.last()
+            this.totalTime = ends.last()
         }
     }
 

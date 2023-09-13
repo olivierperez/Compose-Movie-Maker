@@ -20,7 +20,7 @@ import recorder.Direction
 import recorder.RecorderScope
 
 @Composable
-fun RecorderScope.TitledImage(
+fun RecorderScope.AvatarTitleSubTitle(
     image: @Composable (Modifier) -> Unit,
     title: @Composable (Modifier) -> Unit,
     subTitle: @Composable (Modifier) -> Unit,
@@ -48,8 +48,8 @@ fun RecorderScope.TitledImage(
 @Preview
 @Composable
 fun TitledImagePreview() {
-    with(RecorderScope(AnimatedValue(25, 25, .25f, .25f))) {
-        TitledImage(
+    with(RecorderScope(AnimatedValue(25, 25, .25f, .25f, 1, 1))) {
+        AvatarTitleSubTitle(
             image = { Box(Modifier.background(Color.Gray)) },
             title = { Text("Titre", style = MaterialTheme.typography.body1) },
             subTitle = { Text("Sub-title", style = MaterialTheme.typography.caption) },

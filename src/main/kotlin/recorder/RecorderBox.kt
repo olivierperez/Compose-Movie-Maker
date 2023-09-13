@@ -46,10 +46,10 @@ fun RecorderBox(
         }
 
         var demoAnimatedPercent by remember { mutableStateOf(0f) }
-        var startsComputed by remember { mutableStateOf(listOf(0L)) }
+        var endsComputed by remember { mutableStateOf(listOf(0L)) }
 
-        val demoAnimatedValue by remember(demoAnimatedPercent, startsComputed) {
-            mutableStateOf((demoAnimatedPercent * startsComputed.last()).toLong())
+        val demoAnimatedValue by remember(demoAnimatedPercent, endsComputed) {
+            mutableStateOf((demoAnimatedPercent * endsComputed.last()).toLong())
         }
 
         Box(
@@ -61,9 +61,9 @@ fun RecorderBox(
             CaptureBox(
                 animationValue = demoAnimatedValue,
                 modifier = Modifier,
-                onStartsComputed = { startsComputed = it },
+                onEndsComputed = { endsComputed = it },
                 content = {
-                    with(RecorderScope(buildAnimatedValue(startsComputed, demoAnimatedValue))) {
+                    with(RecorderScope(buildAnimatedValue(endsComputed, demoAnimatedValue))) {
                         content()
                     }
                 }
@@ -73,7 +73,7 @@ fun RecorderBox(
         Slider(
             value = demoAnimatedPercent,
             onValueChange = { demoAnimatedPercent = it },
-            steps = ((startsComputed.last() / 1000).toInt() - 1).coerceAtLeast(0)
+            steps = ((endsComputed.last() / 1000).toInt() - 1).coerceAtLeast(0)
         )
     }
 }
@@ -82,38 +82,38 @@ fun RecorderBox(
 fun CaptureBox(
     animationValue: Long,
     modifier: Modifier = Modifier,
-    onStartsComputed: (List<Long>) -> Unit,
+    onEndsComputed: (List<Long>) -> Unit,
     content: @Composable RecorderScope.() -> Unit
 ) {
-    var computedStarts by remember { mutableStateOf(listOf(0L)) }
+    var computedEnds by remember { mutableStateOf(listOf(0L)) }
     Layout(
         modifier = modifier,
         content = {
-            with(RecorderScope(buildAnimatedValue(computedStarts, animationValue))) {
+            with(RecorderScope(buildAnimatedValue(computedEnds, animationValue))) {
                 content()
             }
         }
     ) { measurables, constraints ->
-        val (placeables, starts) = measurables.fold(
+        val (placeables, ends) = measurables.fold(
             Pair(listOf<Placeable>(), listOf<Long>())
-        ) { (currentPlaceables, currentStarts), measurable ->
+        ) { (currentPlaceables, currentEnds), measurable ->
             val sceneData = measurable.parentData as? SceneData
                 ?: error(".scene(...) Modifier need to be called on each scene")
 
-            val nextStart = (currentStarts.lastOrNull() ?: 0L) + sceneData.millis
-            if (animationValue < (currentStarts.lastOrNull() ?: 0L)) {
-                Pair(currentPlaceables, currentStarts + nextStart)
+            val nextEnd = (currentEnds.lastOrNull() ?: 0L) + sceneData.millis
+            if (animationValue < (currentEnds.lastOrNull() ?: 0L)) {
+                Pair(currentPlaceables, currentEnds + nextEnd)
             } else {
                 val placeable = measurable.measure(constraints)
-                Pair(currentPlaceables + placeable, currentStarts + nextStart)
+                Pair(currentPlaceables + placeable, currentEnds + nextEnd)
             }
         }
 
-        computedStarts = starts
-        onStartsComputed(starts)
+        computedEnds = ends
+        onEndsComputed(ends)
 
         layout(constraints.maxWidth, constraints.maxHeight) {
-            if (animationValue < computedStarts.last()) {
+            if (animationValue < computedEnds.last()) {
                 placeables.last().place(0, 0)
             }
         }
@@ -121,27 +121,29 @@ fun CaptureBox(
 }
 
 private fun buildAnimatedValue(
-    starts: List<Long>,
+    ends: List<Long>,
     animatedValue: Long
 ): AnimatedValue {
-    val (previousStarts, nextStarts) = starts.findPreviousAndNextOf(animatedValue)
-    val absoluteProgress = starts.computeProgressionOf(animatedValue)
-    val localAnimationValue = animatedValue - previousStarts
-    val localProgress = localAnimationValue.toFloat() / (nextStarts - previousStarts)
+    val (previousEnd, nextEnd) = ends.findPreviousAndNextOf(animatedValue)
+    val absoluteProgress = ends.computeProgressionOf(animatedValue)
+    val localAnimationValue = animatedValue - previousEnd
+    val localDuration = nextEnd - previousEnd
+    val localProgress = localAnimationValue.toFloat() / localDuration
 
     return AnimatedValue(
         absoluteValue = animatedValue,
         absoluteProgress = absoluteProgress,
+        absoluteDuration = ends.last(),
         localValue = localAnimationValue,
-        localProgress = localProgress
+        localProgress = localProgress,
+        localDuration = localDuration
     )
 }
 
 private fun List<Long>.findPreviousAndNextOf(animationValue: Long): Pair<Long, Long> {
-    return this
-        .windowed(2) { Pair(it[0], it[1]) }
-        .lastOrNull { (first, _) -> first <= animationValue }
-        ?: Pair(0L, 0L)
+    val previousTime = this.lastOrNull { it <= animationValue } ?: 0L
+    val nextTime = this.firstOrNull { it > animationValue } ?: this.last()
+    return Pair(previousTime, nextTime)
 }
 
 private fun List<Long>.computeProgressionOf(animationValue: Long): Float {
