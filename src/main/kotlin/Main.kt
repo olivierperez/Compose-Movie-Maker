@@ -1,6 +1,5 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
@@ -20,6 +19,7 @@ import recorder.RecorderBox
 import recorder.scene
 import scenes.AvatarTitleSubTitle
 import scenes.BigTitle
+import scenes.Debug
 import java.awt.Dimension
 
 @Preview
@@ -41,18 +41,10 @@ fun MainScene() {
                 )
             }
         )
-        Column(modifier = Modifier.scene(millis = 2_000L).fillMaxSize()) {
-            Text(
-                text = "Scene n°2",
-                style = MaterialTheme.typography.h3,
-            )
-            Text(
-                text = "Absolute - ${animatedValue.absoluteValue} - ${animatedValue.absoluteProgress} - ${animatedValue.absoluteDuration}"
-            )
-            Text(
-                text = "Local - ${animatedValue.localValue} - ${animatedValue.localProgress} - ${animatedValue.localDuration}"
-            )
-        }
+        Debug(
+            modifier = Modifier.scene(millis = 2_000L),
+            title = "Debugging scene"
+        )
         AvatarTitleSubTitle(
             modifier = Modifier.scene(2_000L),
             image = { modifier ->
