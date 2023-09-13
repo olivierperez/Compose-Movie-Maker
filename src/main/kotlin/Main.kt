@@ -19,7 +19,7 @@ import recorder.RecorderBox
 import recorder.scene
 import scenes.AvatarTitleSubTitle
 import scenes.BigTitle
-import scenes.Debug
+import scenes.Headline
 import java.awt.Dimension
 
 @Preview
@@ -41,9 +41,10 @@ fun MainScene() {
                 )
             }
         )
-        Debug(
-            modifier = Modifier.scene(millis = 2_000L),
-            title = "Debugging scene"
+        Headline(
+            modifier = Modifier.scene(4_000L),
+            title = "100% Jetpack Compose",
+            millisToShowFullLength = 2_000L
         )
         AvatarTitleSubTitle(
             modifier = Modifier.scene(2_000L),
@@ -66,6 +67,10 @@ fun MainScene() {
                 )
             }
         )
+        /*Debug(
+            modifier = Modifier.scene(millis = 2_000L),
+            title = "Debugging scene"
+        )*/
     }
 }
 
